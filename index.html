@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conecta Analytics • Inteligência de jornada</title>
+    <link rel="stylesheet" href="src/styles.css" />
+    <script type="module" src="src/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Pular para o conteúdo</a>
+    <aside>
+      <a class="brand" href="index.html">conecta<span>analytics</span></a>
+      <p class="workspace">INTELIGÊNCIA DE JORNADA</p>
+      <nav aria-label="Seções">
+        <a href="#overview">◈ Visão geral</a><a href="#journeys">↗ Jornadas</a
+        ><a href="#signals">◎ Sinais e ações</a><a href="#management">≡ Gestão</a>
+      </nav>
+      <div class="aside-bottom">
+        <strong>Equipe 05</strong>
+        <p>Hackathon Conexão Ancestral</p>
+        <small>Petronect + KODIE Academy</small>
+      </div>
+    </aside>
+    <main id="main">
+      <header>
+        <div>
+          <p class="eyebrow">ACESSO → CONTEXTO → PRÓXIMA AÇÃO</p>
+          <h1>Entenda o caminho.<br /><span>Encontre o próximo passo.</span></h1>
+        </div>
+        <span class="badge">BASE SIMULADA</span>
+      </header>
+      <p class="intro">
+        Uma visão dos acessos para apoiar Marketing e Atendimento. Sinais explicáveis, jornadas
+        visíveis e decisões humanas.
+      </p>
+      <details id="connection" open>
+        <summary>Conexão com a API</summary>
+        <form id="connect">
+          <label
+            >Endereço da API<input
+              id="base-url"
+              type="url"
+              value="http://127.0.0.1:3000"
+              required /></label
+          ><label
+            >Token administrativo local<input
+              id="token"
+              type="password"
+              autocomplete="off"
+              placeholder="Dispensado no modo público de leitura" /></label
+          ><button>Conectar</button
+          ><button type="button" class="secondary" id="disconnect">Desconectar</button>
+        </form>
+        <p class="muted">
+          O token fica apenas na memória desta página e é apagado do campo após conectar. Sem
+          integração com o Portal Petronect.
+        </p>
+      </details>
+      <form id="filters" class="filters">
+        <label>De (UTC)<input id="from" type="date" required /></label
+        ><label>Até (UTC)<input id="to" type="date" required /></label
+        ><label
+          >Segmento<select id="segment">
+            <option value="">Todos os segmentos</option>
+            <option value="energia">Energia</option>
+            <option value="tecnologia">Tecnologia</option>
+            <option value="servicos">Serviços</option>
+          </select></label
+        ><button>Atualizar análise</button
+        ><button type="button" class="secondary" id="export" disabled>Exportar CSV ↓</button>
+      </form>
+      <p id="status" role="status" aria-live="polite">Conecte a API para carregar os dados.</p>
+      <div id="data" hidden>
+        <section id="overview">
+          <div class="section-heading">
+            <h2>Visão geral</h2>
+            <span id="period" class="muted"></span>
+          </div>
+          <div id="metrics" class="metrics"></div>
+          <div class="charts">
+            <article>
+              <h3>Onde a jornada acontece</h3>
+              <p class="muted">Visualizações por página no período</p>
+              <div id="pages"></div>
+            </article>
+            <article>
+              <h3>A primeira escolha</h3>
+              <p class="muted">Primeiro clique observado por sessão no período</p>
+              <div id="clicks"></div>
+            </article>
+          </div>
+          <article>
+            <h3>Ritmo de interações</h3>
+            <div id="daily" class="daily" aria-label="Eventos por dia"></div>
+          </article>
+        </section>
+        <section id="journeys">
+          <div class="section-heading">
+            <h2>Jornadas em contexto</h2>
+            <span class="muted">Perfis fictícios · Abra para ver os eventos</span>
+          </div>
+          <div id="journey-list"></div>
+        </section>
+        <section id="signals">
+          <div class="section-heading">
+            <h2>Sinais que orientam ações</h2>
+            <span class="muted">Regras demonstrativas · Revisão humana</span>
+          </div>
+          <p class="muted">
+            Os sinais usam somente o período filtrado. Ausência de conclusão observada pode refletir
+            o recorte. Nenhuma mensagem é enviada.
+          </p>
+          <div id="signal-list" class="signal-grid"></div>
+        </section>
+        <section id="management">
+          <h2>Gestão da demonstração</h2>
+          <article>
+            <p id="mode"></p>
+            <p>
+              Planejar ou concluir uma ação registra seu estado, sem disparar e-mails ou campanhas.
+              “Concluída” indica o controle manual da equipe, não um reengajamento comprovado.
+            </p>
+            <h3>Últimas alterações de ações</h3>
+            <ul id="audit"></ul>
+          </article>
+        </section>
+      </div>
+      <footer>
+        Conecta · Equipe 05 · Protótipo demonstrável com dados fictícios.
+        <a href="http://127.0.0.1:8080/demo.html">Abrir jornada demonstrativa ↗</a>
+      </footer>
+    </main>
+  </body>
+</html>
