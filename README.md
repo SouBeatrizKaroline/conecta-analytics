@@ -28,9 +28,11 @@ O **Hackathon Conexão Ancestral**, da **Petronect**, com execução da **KODIE 
 
 O **Conecta** organiza esse problema em um ciclo demonstrável: **acesso → evento → jornada → sinal → próxima ação**. A proposta atende fornecedores e clientes na experiência de navegação e apoia Marketing e Atendimento na interpretação dos acessos.
 
+O recorte da jornada segue a apresentação do Portal Petronect: entrada na área pública, busca de oportunidades, leitura de objeto, itens, prazos e documentos, esclarecimentos na sala de colaboração e acesso a cadastro, apoio e treinamentos. O protótipo mede esses pontos de contato sem executar inscrição, proposta, assinatura ou comunicação real.
+
 **Todos os dados da nova API e do Analytics são fictícios. Não existe integração com o Portal Petronect.** As recomendações são regras transparentes para revisão humana, sem modelos preditivos, envio de campanhas ou promessa de aumento de conversão.
 
-Fonte do escopo: material enviado pela equipe, _Slides_Abertura_Hackathon_Conexao_Ancestral.pdf_, páginas 2, 8, 9, 11 e 12, abertura de 14/09/2026. As páginas 8 e 9 sustentam o problema e o uso obrigatório de base simulada/protótipo demonstrável. O PDF original não é redistribuído aqui.
+Fontes do escopo: material enviado pela equipe, _Slides_Abertura_Hackathon_Conexao_Ancestral.pdf_, páginas 2, 8, 9, 11 e 12, e _Portal_Petronect_Palestra 1.pdf_, páginas 3 a 13, apresentados em 14 e 15/09/2026. As fontes sustentam o problema, a base simulada e os pontos da jornada representados. Os PDFs originais não são redistribuídos aqui.
 
 ## Os três repositórios
 
