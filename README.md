@@ -111,3 +111,7 @@ Os papéis individuais devem ser definidos pela equipe. Esta documentação não
 ## Desenvolvimento e licença
 
 Leia [CONTRIBUTING](CONTRIBUTING.md) para branches, Conventional Commits, revisão e padrões. Veja [roadmap](docs/ROADMAP.md), [segurança](SECURITY.md) e [origem da implementação](docs/PROVENANCE.md). A licença MIT está **sugerida para decisão da equipe**, conforme [LICENSE](LICENSE); não foi aplicada retroativamente ao código herdado.
+
+## Branches
+
+`main` é a versão publicada do dashboard. `develop` acompanha a `main` para integração e validação. Branches de trabalho devem ser removidas após o merge para manter o repositório enxuto.
