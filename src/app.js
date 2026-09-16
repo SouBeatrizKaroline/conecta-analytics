@@ -2,7 +2,9 @@ import { Api } from './api.js';
 const $ = (selector) => document.querySelector(selector);
 let api = null,
   readOnly = true,
-  busy = false;
+  busy = false,
+  connected = false,
+  displayedQuery = null;
 const labels = {
   home: 'Entrada',
   empresa: 'Empresa',
@@ -34,6 +36,7 @@ function query() {
 function clearData() {
   $('#data').hidden = true;
   $('#export').disabled = true;
+  displayedQuery = null;
 }
 function bars(selector, rows) {
   const root = $(selector);
@@ -51,13 +54,21 @@ function bars(selector, rows) {
   }
   if (!rows.length) root.append(el('p', 'Nenhum evento neste período.', 'muted'));
 }
+function setBusy(value) {
+  busy = value;
+  for (const node of document.querySelectorAll(
+    '#connect input, #connect button, #filters input, #filters select, #filters button',
+  ))
+    node.disabled = value;
+  $('#export').disabled = value || !displayedQuery;
+}
 async function refresh() {
   if (busy) return;
-  if (!api) {
+  if (!api || !connected) {
     $('#status').textContent = 'Conecte a API antes de atualizar.';
     return;
   }
-  busy = true;
+  setBusy(true);
   clearData();
   $('#status').textContent = 'Carregando análise…';
   try {
@@ -65,7 +76,7 @@ async function refresh() {
     const [summary, journeys, signals, audit] = await Promise.all([
       api.json(`/api/v1/admin/summary?${q}`),
       api.json(`/api/v1/admin/journeys?${q}`),
-      api.json(`/api/v1/admin/signals?${q}`),
+      api.json(`/api/v2/admin/signals?${q}`),
       api.json('/api/v1/admin/audit?limit=20'),
     ]);
     $('#metrics').replaceChildren();
@@ -107,6 +118,8 @@ async function refresh() {
     }
     if (!journeys.items.length)
       $('#journey-list').append(el('p', 'Nenhuma jornada neste período.'));
+    $('#signal-reference').textContent =
+      `Referência: ${new Date(signals.evaluatedAt).toLocaleString('pt-BR', { timeZone: 'UTC' })} UTC. Estado das ações e atividade atual consultados agora.`;
     $('#signal-list').replaceChildren();
     for (const signal of signals.items) {
       const card = el('article');
@@ -114,10 +127,17 @@ async function refresh() {
         el('span', `Prioridade ${signal.priority}`, 'badge'),
         el('h3', signal.title),
         el('strong', signal.label),
+        el(
+          'p',
+          signal.activeNow
+            ? 'Este sinal continua ativo hoje.'
+            : 'Sinal histórico: já não está ativo hoje.',
+          'muted',
+        ),
         el('p', signal.reason),
         el('p', signal.recommendation, 'recommendation'),
       );
-      const control = el('label', 'Estado da ação');
+      const control = el('label', 'Estado atual da ação');
       const select = el('select');
       select.setAttribute('aria-label', `Estado da ação: ${signal.title} · ${signal.label}`);
       for (const value of ['open', 'planned', 'done', 'dismissed']) {
@@ -126,21 +146,29 @@ async function refresh() {
         select.append(option);
       }
       select.value = signal.status;
-      select.disabled = readOnly;
+      select.disabled = readOnly || !signal.activeNow;
       select.addEventListener('change', async () => {
+        if (busy) {
+          select.value = signal.status;
+          return;
+        }
+        setBusy(true);
         select.disabled = true;
         try {
           await api.json(`/api/v1/admin/signals/${encodeURIComponent(signal.id)}`, {
             method: 'PATCH',
             body: JSON.stringify({ status: select.value }),
           });
+          setBusy(false);
           await refresh();
-          $('#status').textContent = 'Estado salvo. Nenhuma comunicação foi enviada.';
+          if (!$('#data').hidden)
+            $('#status').textContent = 'Estado salvo. Nenhuma comunicação foi enviada.';
         } catch (error) {
           select.value = signal.status;
           $('#status').textContent = `Não foi possível salvar: ${error.message}`;
         } finally {
-          select.disabled = readOnly;
+          setBusy(false);
+          select.disabled = readOnly || !signal.activeNow;
         }
       });
       control.append(select);
@@ -161,6 +189,7 @@ async function refresh() {
     $('#mode').textContent = readOnly
       ? 'Modo público: leitura de dados fictícios; gestão desativada.'
       : 'Modo local: gestão habilitada com token administrativo.';
+    displayedQuery = q;
     $('#data').hidden = false;
     $('#export').disabled = false;
     $('#status').textContent =
@@ -169,7 +198,7 @@ async function refresh() {
     clearData();
     $('#status').textContent = `Dados indisponíveis: ${error.message}`;
   } finally {
-    busy = false;
+    setBusy(false);
   }
 }
 $('#from').value = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10);
@@ -178,21 +207,30 @@ $('#connect').addEventListener('submit', async (event) => {
   event.preventDefault();
   if (busy) return;
   clearData();
+  setBusy(true);
+  connected = false;
   api = new Api($('#base-url').value, $('#token').value);
   $('#token').value = '';
   try {
     const health = await api.json('/health');
+    if (health.capabilities?.historicalSignals !== true)
+      throw new Error('Atualize a API para uma versão com sinais históricos v2.');
     readOnly = health.readOnly;
+    connected = true;
+    setBusy(false);
     await refresh();
     if (!$('#data').hidden) $('#connection').open = false;
   } catch (error) {
     api = null;
     $('#status').textContent = `API indisponível: ${error.message}`;
+  } finally {
+    setBusy(false);
   }
 });
 $('#disconnect').addEventListener('click', () => {
   if (busy) return;
   api = null;
+  connected = false;
   $('#token').value = '';
   clearData();
   $('#status').textContent = 'Desconectado. Token removido da memória.';
@@ -202,17 +240,20 @@ $('#filters').addEventListener('submit', (event) => {
   refresh();
 });
 $('#export').addEventListener('click', async () => {
-  if (!api || busy) return;
+  if (!api || busy || !displayedQuery) return;
+  setBusy(true);
   try {
-    const response = await api.get(`/api/v1/admin/events.csv?${query()}`);
+    const response = await api.get(`/api/v1/admin/events.csv?${displayedQuery}`);
     const url = URL.createObjectURL(await response.blob());
     const anchor = el('a');
     anchor.href = url;
     anchor.download = 'conecta-eventos-simulados.csv';
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    $('#status').textContent = 'CSV exportado com os filtros atuais.';
+    $('#status').textContent = 'CSV exportado com os filtros da análise exibida.';
   } catch (error) {
     $('#status').textContent = `Exportação não concluída: ${error.message}`;
+  } finally {
+    setBusy(false);
   }
 });

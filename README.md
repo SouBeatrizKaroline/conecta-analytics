@@ -1,5 +1,9 @@
 # Conecta Analytics
 
+## Integração atualizada
+
+O painel agora consome os sinais v2 da API, mostra a referência histórica e informa se cada sinal continua ativo hoje. A edição fica bloqueada para sinais inativos e no modo público. O CSV mantém os filtros da análise exibida. Atualize a API antes do painel; consulte o [guia de integração](docs/INTEGRATION.md).
+
 ### Entenda o caminho. Encontre o próximo passo.
 
 Frontend administrativo do Conecta, desenvolvido pela Equipe 05 para o Hackathon Conexão Ancestral, **Petronect + KODIE Academy**. Apresenta os eventos processados pela API em uma experiência voltada a Marketing, Atendimento e gestão.
