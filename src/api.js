@@ -14,11 +14,20 @@ export class Api {
     });
     if (!response.ok) {
       const data = await response.json();
-      throw new Error(data.error?.message ?? 'Falha na API.');
+      throw new Error(data.message ?? data.error?.message ?? 'Falha na API.');
     }
     return response;
   }
   async json(path, options) {
-    return (await this.get(path, options)).json();
+    const data = await (await this.get(path, options)).json();
+    return data?.success === true && 'data' in data ? data.data : data;
+  }
+  async login(email, password) {
+    const data = await this.json('/api/v1/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+    this.token = data.token;
+    return data;
   }
 }

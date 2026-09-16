@@ -2,7 +2,7 @@
 
 ## Integração atualizada
 
-O painel agora consome os sinais v2 da API, mostra a referência histórica e informa se cada sinal continua ativo hoje. A edição fica bloqueada para sinais inativos e no modo público. O CSV mantém os filtros da análise exibida. Atualize a API antes do painel; consulte o [guia de integração](docs/INTEGRATION.md).
+O painel consome somente a API do backend. Ele lê sinais v2, mostra a referência histórica, informa se cada sinal continua ativo hoje, cria rascunhos de campanha a partir de sinais ativos e exporta CSV com os filtros exibidos. A edição fica bloqueada para sinais inativos e no modo público. Consulte o [guia de integração](docs/INTEGRATION.md).
 
 ### Entenda o caminho. Encontre o próximo passo.
 
@@ -16,7 +16,9 @@ Frontend administrativo do Conecta, desenvolvido pela Equipe 05 para o Hackathon
 
 ## Executar
 
-Com Node.js 24, execute npm ci e npm start. Abra **http://127.0.0.1:8081** e informe o endereço da API. No modo local de escrita, use ADMIN_TOKEN do .env do backend. No modo público de leitura, o token é dispensado e a gestão fica desativada. A senha digitada é apagada do campo após a conexão; o token fica somente na memória da página.
+Com Node.js 24, execute npm ci e npm start. Abra **http://127.0.0.1:8081** e informe o endereço da API. Localmente use `http://127.0.0.1:3000`; em produção use `https://conecta-api-2x27.onrender.com`.
+
+No modo local de escrita, use `ADMIN_TOKEN` ou o login `DEMO_ADMIN_EMAIL`/`DEMO_ADMIN_PASSWORD` do `.env` do backend. No modo público de leitura, o token é dispensado e a gestão fica desativada. A senha digitada é apagada do campo após a conexão; token e sessão ficam somente na memória da página.
 
 Inicie o backend e a base simulada seguindo o [guia integrado](docs/INTEGRATION.md). Não existe aplicação hospedada automaticamente pela publicação no GitHub.
 
@@ -46,10 +48,10 @@ flowchart LR
   API --> DB[(SQLite: eventos e ações)]
   DB --> R[Regras de jornada na API]
   R --> API
-  A[Conecta Analytics] -->|Consulta agregados e jornadas| API
-  API -->|Dados processados e CSV| A
+  A[Conecta Analytics] -->|Consulta agregados, jornadas e sinais| API
+  API -->|Dados processados, campanhas e CSV| A
   G[Marketing e Atendimento] --> A
-  A -->|Atualiza estado de uma ação| API
+  A -->|Atualiza ações e cria rascunhos de campanha| API
 ```
 
 O Analytics consulta a API por HTTP e atualiza sob demanda. Não há conexão direta dos frontends ao banco, WebSocket ou envio automático do backend ao painel.
@@ -63,6 +65,7 @@ O Analytics consulta a API por HTTP e atualiza sob demanda. Não há conexão di
 | Ritmo                      | Eventos por dia                                          | Comparar atividade ao longo do período     |
 | Jornadas                   | Timeline e conclusão observada                           | Investigar contexto antes de concluir      |
 | Sinais                     | Motivo, regra, recomendação e prioridade                 | Apoiar revisão humana                      |
+| Campanhas                  | Rascunhos criados a partir de sinais ativos               | Planejar comunicação sob revisão humana    |
 | Gestão                     | Estado aberto/planejado/concluído/descartado e auditoria | Acompanhar o trabalho da equipe            |
 | CSV                        | Eventos do mesmo recorte                                 | Abrir em planilha ou ferramenta de BI      |
 
@@ -85,7 +88,11 @@ Os filtros usam período em UTC e segmento. O painel atualiza sob demanda. Timel
 
 HTML, CSS e JavaScript, sem etapa de build e sem dependências de frontend. Interface responsiva com navegação por teclado, rótulos visíveis, foco destacado, estados de erro/vazio e valores textuais junto aos gráficos. Conteúdo da API usa textContent. Em falha de conexão, o painel oculta os dados anteriores para não apresentá-los como atualizados.
 
-O cálculo das métricas fica no backend. O frontend apenas organiza a apresentação e envia mudanças de estado de ações. Isso mantém uma definição comum de eventos, filtros e sinais para toda a solução.
+O cálculo das métricas fica no backend. O frontend apenas organiza a apresentação, envia mudanças de estado de ações e cria campanhas em rascunho. Isso mantém uma definição comum de eventos, filtros, sinais e campanhas para toda a solução.
+
+## Produção
+
+Configure o campo "Endereço da API" com `https://conecta-api-2x27.onrender.com` ou com a URL da API publicada. A API no Render possui outbound IPs compartilhados `74.220.50.0/24` e `74.220.58.0/24`; eles só importam caso algum serviço externo exija allowlist de saída.
 
 ## Equipe 05
 

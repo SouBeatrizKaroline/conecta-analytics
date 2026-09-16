@@ -20,6 +20,13 @@ const labels = {
   planned: 'Planejada',
   done: 'Concluída',
   dismissed: 'Descartada',
+  draft: 'Rascunho',
+  scheduled: 'Agendada',
+  sent: 'Enviada',
+  cancelled: 'Cancelada',
+  portal: 'Portal',
+  email: 'E-mail',
+  whatsapp: 'WhatsApp',
 };
 const label = (value) => labels[value] ?? value;
 function el(tag, text, className) {
@@ -37,6 +44,9 @@ function clearData() {
   $('#data').hidden = true;
   $('#export').disabled = true;
   displayedQuery = null;
+}
+function segmentFor(signal) {
+  return ['energia', 'tecnologia', 'servicos'].includes(signal.segment) ? signal.segment : 'servicos';
 }
 function bars(selector, rows) {
   const root = $(selector);
@@ -73,11 +83,12 @@ async function refresh() {
   $('#status').textContent = 'Carregando análise…';
   try {
     const q = query();
-    const [summary, journeys, signals, audit] = await Promise.all([
+    const [summary, journeys, signals, audit, campaigns] = await Promise.all([
       api.json(`/api/v1/admin/summary?${q}`),
       api.json(`/api/v1/admin/journeys?${q}`),
       api.json(`/api/v2/admin/signals?${q}`),
       api.json('/api/v1/admin/audit?limit=20'),
+      api.json('/api/v1/admin/campaigns?limit=12'),
     ]);
     $('#metrics').replaceChildren();
     for (const [title, value, description] of [
@@ -173,10 +184,56 @@ async function refresh() {
       });
       control.append(select);
       card.append(control);
+      const campaignButton = el('button', 'Criar rascunho de campanha');
+      campaignButton.type = 'button';
+      campaignButton.disabled = readOnly || !signal.activeNow;
+      campaignButton.addEventListener('click', async () => {
+        if (busy) return;
+        setBusy(true);
+        try {
+          await api.json('/api/v1/admin/campaigns', {
+            method: 'POST',
+            body: JSON.stringify({
+              name: `Reengajamento: ${signal.title}`,
+              segment: segmentFor(signal),
+              channel: 'portal',
+              message: signal.recommendation,
+              signalIds: [signal.id],
+            }),
+          });
+          setBusy(false);
+          await refresh();
+          if (!$('#data').hidden) $('#status').textContent = 'Rascunho de campanha criado na API.';
+        } catch (error) {
+          $('#status').textContent = `Campanha não criada: ${error.message}`;
+        } finally {
+          setBusy(false);
+        }
+      });
+      card.append(campaignButton);
       $('#signal-list').append(card);
     }
     if (!signals.items.length)
       $('#signal-list').append(el('p', 'Nenhum sinal pelas regras atuais neste período.'));
+    $('#campaign-list').replaceChildren(
+      ...campaigns.items.map((campaign) => {
+        const card = el('article');
+        card.append(
+          el('span', label(campaign.status), 'badge'),
+          el('h3', campaign.name),
+          el('strong', `${label(campaign.segment)} · ${label(campaign.channel)}`),
+          el('p', campaign.message, 'recommendation'),
+          el(
+            'p',
+            `${campaign.signalIds.length} sinal(is) vinculado(s) · Atualizada em ${new Date(campaign.updatedAt).toLocaleString('pt-BR')}`,
+            'muted',
+          ),
+        );
+        return card;
+      }),
+    );
+    if (!campaigns.items.length)
+      $('#campaign-list').append(el('p', 'Nenhum rascunho de campanha criado ainda.'));
     $('#audit').replaceChildren(
       ...audit.items.map((item) =>
         el(
@@ -210,8 +267,15 @@ $('#connect').addEventListener('submit', async (event) => {
   setBusy(true);
   connected = false;
   api = new Api($('#base-url').value, $('#token').value);
+  const adminEmail = $('#admin-email').value.trim();
+  const adminPassword = $('#admin-password').value;
+  $('#admin-password').value = '';
   $('#token').value = '';
   try {
+    if (adminEmail || adminPassword) {
+      if (!adminEmail || !adminPassword) throw new Error('Informe e-mail e senha admin juntos.');
+      await api.login(adminEmail, adminPassword);
+    }
     const health = await api.json('/health');
     if (health.capabilities?.historicalSignals !== true)
       throw new Error('Atualize a API para uma versão com sinais históricos v2.');
@@ -232,6 +296,7 @@ $('#disconnect').addEventListener('click', () => {
   api = null;
   connected = false;
   $('#token').value = '';
+  $('#admin-password').value = '';
   clearData();
   $('#status').textContent = 'Desconectado. Token removido da memória.';
 });

@@ -14,7 +14,8 @@
       <p class="workspace">INTELIGÊNCIA DE JORNADA</p>
       <nav aria-label="Seções">
         <a href="#overview">◈ Visão geral</a><a href="#journeys">↗ Jornadas</a
-        ><a href="#signals">◎ Sinais e ações</a><a href="#management">≡ Gestão</a>
+        ><a href="#signals">◎ Sinais e ações</a><a href="#campaigns">□ Campanhas</a
+        ><a href="#management">≡ Gestão</a>
       </nav>
       <div class="aside-bottom">
         <strong>Equipe 05</strong>
@@ -49,6 +50,18 @@
               type="password"
               autocomplete="off"
               placeholder="Dispensado no modo público de leitura" /></label
+          ><label
+            >E-mail admin<input
+              id="admin-email"
+              type="email"
+              autocomplete="username"
+              placeholder="Opcional: login da API" /></label
+          ><label
+            >Senha admin<input
+              id="admin-password"
+              type="password"
+              autocomplete="current-password"
+              placeholder="Opcional: login da API" /></label
           ><button>Conectar</button
           ><button type="button" class="secondary" id="disconnect">Desconectar</button>
         </form>
@@ -113,6 +126,13 @@
           </p>
           <p id="signal-reference" class="muted"></p>
           <div id="signal-list" class="signal-grid"></div>
+        </section>
+        <section id="campaigns">
+          <div class="section-heading">
+            <h2>Campanhas e recomendações</h2>
+            <span class="muted">Rascunhos criados pela API · Sem disparo automático</span>
+          </div>
+          <div id="campaign-list" class="signal-grid"></div>
         </section>
         <section id="management">
           <h2>Gestão da demonstração</h2>
