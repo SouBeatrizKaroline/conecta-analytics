@@ -322,3 +322,6 @@ $('#export').addEventListener('click', async () => {
     setBusy(false);
   }
 });
+
+// No endereço público, conecta automaticamente à API configurada no HTML.
+if (location.hostname.endsWith('github.io')) $('#connect').requestSubmit();
