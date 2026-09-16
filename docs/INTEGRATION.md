@@ -1,5 +1,7 @@
 # Executar os três sistemas
 
+Este painel lê da API os eventos categóricos enviados pelas telas principais do App após consentimento. A cadeia demonstrável é `home.html`/`oportunidades.html` -> Conecta API -> Conecta Analytics; o painel nunca acessa diretamente o navegador ou o banco SQLite.
+
 ## Integração de sinais v2 (revisão atual)
 
 Atualize primeiro a API e depois o Analytics. O painel exige `/health.capabilities.historicalSignals: true`; em uma API anterior, informa que a atualização é necessária. O App mantém os endpoints v1 e não precisa de alteração para enviar eventos ou exibir `nextStep` na demo.
